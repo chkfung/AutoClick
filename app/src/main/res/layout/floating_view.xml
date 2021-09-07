@@ -41,5 +41,11 @@
             android:layout_weight="1"
             android:src="@drawable/close" />
 
+        <ImageView
+            android:id="@+id/ivAddAnchor"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_baseline_add_24" />
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

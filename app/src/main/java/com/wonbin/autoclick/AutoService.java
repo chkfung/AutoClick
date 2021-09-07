@@ -1,11 +1,20 @@
 package com.wonbin.autoclick;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
 import android.content.Intent;
 import android.graphics.Path;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
 
@@ -25,8 +34,8 @@ public class AutoService extends AccessibilityService {
     public static final String SWIPE = "swipe";
     private FloatingView mFloatingView;
     private int mInterval;
-    private int mX;
-    private int mY;
+    private int[] mX;
+    private int[] mY;
     private String mMode;
 
     private Handler mHandler;
@@ -52,12 +61,12 @@ public class AutoService extends AccessibilityService {
                 mFloatingView.hide();
                 mHandler.removeCallbacksAndMessages(null);
             } else if (PLAY.equals(action)) {
-                mX = intent.getIntExtra("x", 0);
-                mY = intent.getIntExtra("y", 0);
+                mX = intent.getIntArrayExtra("x");
+                mY = intent.getIntArrayExtra("y");
                 if (mRunnable == null) {
                     mRunnable = new IntervalRunnable();
                 }
-                mHandler.postDelayed(mRunnable, mInterval);
+                mHandler.post(mRunnable);
                 Toast.makeText(getBaseContext(), "已开始", Toast.LENGTH_SHORT).show();
             } else if (STOP.equals(action)) {
                 mHandler.removeCallbacksAndMessages(null);
@@ -67,23 +76,40 @@ public class AutoService extends AccessibilityService {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    private void scheduleTap() {
+        for (int i = 0; i < mX.length; i++) {
+            final int x = mX[i];
+            final int y = mY[i];
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    playTap(x, y);
+                }
+            }, i * 1000);
+        }
+        mHandler.postDelayed(mRunnable, mX.length * 1000 + mInterval);
+    }
+
     private void playTap(int x, int y) {
+        Log.d("playTap", "Init");
         Path path = new Path();
         path.moveTo(x, y);
         path.lineTo(x, y);
         GestureDescription.Builder builder = new GestureDescription.Builder();
         builder.addStroke(new GestureDescription.StrokeDescription(path, 10L, 10L));
         GestureDescription gestureDescription = builder.build();
+
         dispatchGesture(gestureDescription, new GestureResultCallback() {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-                mHandler.postDelayed(mRunnable, mInterval);
+                Log.d("playTap", "Tapping");
             }
 
             @Override
             public void onCancelled(GestureDescription gestureDescription) {
                 super.onCancelled(gestureDescription);
+                Log.d("playTap", "Cancel");
             }
         }, null);
     }
@@ -125,10 +151,11 @@ public class AutoService extends AccessibilityService {
         @Override
         public void run() {
             if (SWIPE.equals(mMode)) {
-                playSwipe(mX, mY, mX, mY - 300);
+                //playSwipe(mX, mY, mX, mY - 300);
             } else {
-                playTap(mX, mY);
+                scheduleTap();
             }
+
         }
     }
 }

@@ -2,6 +2,7 @@ package com.wonbin.autoclick;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -33,24 +34,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mInterval = findViewById(R.id.interval);
         mCheckMode = findViewById(R.id.check_mode);
         mStart.setOnClickListener(this);
-
+        findViewById(R.id.btn).setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(this, AutoService.class);
         switch (v.getId()) {
             case R.id.start:
+                Intent intent = new Intent(this, AutoService.class);
                 intent.putExtra(AutoService.ACTION, AutoService.SHOW);
                 intent.putExtra("interval", Integer.valueOf(mInterval.getText().toString()));
                 int id = mCheckMode.getCheckedRadioButtonId();
                 intent.putExtra(AutoService.MODE, id == R.id.swipe ? AutoService.SWIPE : AutoService.TAP);
+                startService(intent);
+                finish();
                 break;
 //            case R.id.btn_hide:
 ////                intent.putExtra(AutoService.ACTION, AutoService.HIDE);
 ////                break;
+            case R.id.btn:
+                Intent intent2 = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                startActivity(intent2);
+                break;
         }
-        startService(intent);
-        finish();
     }
 }
