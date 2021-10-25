@@ -91,7 +91,6 @@ public class AutoService extends AccessibilityService {
     }
 
     private void playTap(int x, int y) {
-        Log.d("playTap", "Init");
         Path path = new Path();
         path.moveTo(x, y);
         path.lineTo(x, y);
@@ -103,13 +102,11 @@ public class AutoService extends AccessibilityService {
             @Override
             public void onCompleted(GestureDescription gestureDescription) {
                 super.onCompleted(gestureDescription);
-                Log.d("playTap", "Tapping");
             }
 
             @Override
             public void onCancelled(GestureDescription gestureDescription) {
                 super.onCancelled(gestureDescription);
-                Log.d("playTap", "Cancel");
             }
         }, null);
     }
